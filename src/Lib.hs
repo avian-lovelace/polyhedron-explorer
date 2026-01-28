@@ -11,9 +11,14 @@ import GHC.Float (int2Double)
 
 main :: IO ()
 main = do
-  let normalizedOctahedron = volumeNormalize octahedron
-  printPolyhedron normalizedOctahedron
-  print . polyhedronVolume $ normalizedOctahedron
+  printPolyhedron tetrahedron
+  print . polyhedronVolume $ tetrahedron
+
+-- let normalizedOctahedron = volumeNormalize octahedron
+-- printPolyhedron normalizedOctahedron
+-- print . polyhedronVolume $ normalizedOctahedron
+-- let dualCube = dualPolyhedron cube
+-- printPolyhedron dualCube
 
 newtype Point = Point (Double, Double, Double)
 
@@ -28,8 +33,8 @@ elementWise' f (Point (x1, y1, z1)) (Point (x2, y2, z2)) = Point (f x1 x2, f y1 
 
 triangulate :: [Point] -> [(Point, Point, Point)]
 triangulate [] = []
-triangulate [p1] = []
-triangulate [p1, p2] = []
+triangulate [_p1] = []
+triangulate [_p1, _p2] = []
 triangulate (p1 : p2 : p3 : ps) = (p1, p2, p3) : triangulate (p1 : p3 : ps)
 
 tetrahedronVolume :: Point -> Point -> Point -> Double
@@ -64,7 +69,7 @@ toFacePoints (Polyhedron {vertices, faces}) = [(vertices !) <$> face | (_, face)
 
 printPolyhedron :: (Ord v) => Polyhedron v f -> IO ()
 printPolyhedron polyhedron = do
-  let Polyhedron {vertices, faces} = polyhedron
+  let Polyhedron {vertices} = polyhedron
   let verticesListString = intercalate ", " [show vertex | (_, vertex) <- Map.toList vertices]
   putStrLn $ "Vertices: " ++ verticesListString
 
@@ -118,7 +123,7 @@ getSign x
   | x == 0 = Zero
   | otherwise = Neg
 
-signMultiplier :: Sign -> Double
+signMultiplier :: (Num a) => Sign -> a
 signMultiplier Pos = 1
 signMultiplier Zero = 0
 signMultiplier Neg = -1
@@ -144,6 +149,26 @@ cube = generatePolyhedron vertexGenerators vgToPoint faceGenerators fgToFace
     faceGenerators = [(axis, sign) | axis <- axes, sign <- plusMinus]
     faceGeneratorTemplate = [(Pos, Pos), (Pos, Neg), (Neg, Neg), (Neg, Pos)]
     fgToFace (axis, sign) = insertInAxis axis sign <$> faceGeneratorTemplate
+
+tetrahedron :: Polyhedron (Sign, Sign, Sign) (Sign, Sign, Sign)
+tetrahedron = generatePolyhedron vertexGenerators vgToPoint faceGenerators fgToFace
+  where
+    vertexGenerators =
+      [ (xSign, ySign, zSign)
+        | xSign <- plusMinus,
+          ySign <- plusMinus,
+          zSign <- plusMinus,
+          signMultiplier xSign * signMultiplier ySign * signMultiplier zSign == 1
+      ]
+    vgToPoint (xSign, ySign, zSign) = Point (signMultiplier xSign, signMultiplier ySign, signMultiplier zSign)
+    faceGenerators =
+      [ (xSign, ySign, zSign)
+        | xSign <- plusMinus,
+          ySign <- plusMinus,
+          zSign <- plusMinus,
+          signMultiplier xSign * signMultiplier ySign * signMultiplier zSign == -1
+      ]
+    fgToFace (xSign, ySign, zSign) = filter (\(xSign', ySign', zSign') -> xSign == xSign' || ySign == ySign' || zSign == zSign') vertexGenerators
 
 dualPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron f v
 dualPolyhedron (Polyhedron {vertices, faces}) = Polyhedron {vertices = dualVertices, faces = dualFaces}
