@@ -11,8 +11,9 @@ import GHC.Float (int2Double)
 
 main :: IO ()
 main = do
-  printPolyhedron tetrahedron
-  print . polyhedronVolume $ tetrahedron
+  let normalizedTetrahedron = volumeNormalize tetrahedron
+  printPolyhedron normalizedTetrahedron
+  print . polyhedronVolume $ normalizedTetrahedron
 
 -- let normalizedOctahedron = volumeNormalize octahedron
 -- printPolyhedron normalizedOctahedron
@@ -102,10 +103,10 @@ unitAxis X = Point (1, 0, 0)
 unitAxis Y = Point (0, 1, 0)
 unitAxis Z = Point (0, 0, 1)
 
-insertInAxis :: Axis -> a -> (a, a) -> (a, a, a)
-insertInAxis X r (s, t) = (r, s, t)
-insertInAxis Y r (s, t) = (t, r, s)
-insertInAxis Z r (s, t) = (s, t, r)
+alignedToAxis :: Axis -> (a, a, a) -> (a, a, a)
+alignedToAxis X (r, s, t) = (r, s, t)
+alignedToAxis Y (r, s, t) = (t, r, s)
+alignedToAxis Z (r, s, t) = (s, t, r)
 
 data Sign = Neg | Zero | Pos deriving (Eq, Ord)
 
@@ -147,8 +148,8 @@ cube = generatePolyhedron vertexGenerators vgToPoint faceGenerators fgToFace
     vertexGenerators = [(xSign, ySign, zSign) | xSign <- plusMinus, ySign <- plusMinus, zSign <- plusMinus]
     vgToPoint (xSign, ySign, zSign) = Point (signMultiplier xSign, signMultiplier ySign, signMultiplier zSign)
     faceGenerators = [(axis, sign) | axis <- axes, sign <- plusMinus]
-    faceGeneratorTemplate = [(Pos, Pos), (Pos, Neg), (Neg, Neg), (Neg, Pos)]
-    fgToFace (axis, sign) = insertInAxis axis sign <$> faceGeneratorTemplate
+    faceGeneratorTemplate sign = [(sign, Pos, Pos), (sign, Pos, Neg), (sign, Neg, Neg), (sign, Neg, Pos)]
+    fgToFace (axis, sign) = alignedToAxis axis <$> faceGeneratorTemplate sign
 
 tetrahedron :: Polyhedron (Sign, Sign, Sign) (Sign, Sign, Sign)
 tetrahedron = generatePolyhedron vertexGenerators vgToPoint faceGenerators fgToFace
