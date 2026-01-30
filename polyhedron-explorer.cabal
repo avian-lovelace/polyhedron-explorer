@@ -26,6 +26,11 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Operators
+      Platonic
+      Polyhedron
+      Space
+      Volume
   other-modules:
       Paths_polyhedron_explorer
   autogen-modules:
