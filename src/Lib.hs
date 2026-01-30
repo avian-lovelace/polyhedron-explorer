@@ -11,9 +11,8 @@ import GHC.Float (int2Double)
 
 main :: IO ()
 main = do
-  let normalizedTetrahedron = volumeNormalize tetrahedron
-  printPolyhedron normalizedTetrahedron
-  print . polyhedronVolume $ normalizedTetrahedron
+  printPolyhedron dodecahedron
+  print . polyhedronVolume $ dodecahedron
 
 -- let normalizedOctahedron = volumeNormalize octahedron
 -- printPolyhedron normalizedOctahedron
@@ -108,6 +107,11 @@ alignedToAxis X (r, s, t) = (r, s, t)
 alignedToAxis Y (r, s, t) = (t, r, s)
 alignedToAxis Z (r, s, t) = (s, t, r)
 
+prevAxis :: Axis -> Axis
+prevAxis X = Z
+prevAxis Y = X
+prevAxis Z = Y
+
 data Sign = Neg | Zero | Pos deriving (Eq, Ord)
 
 instance Show Sign where
@@ -133,6 +137,11 @@ timesSign :: Sign -> Point -> Point
 timesSign Pos (Point (x, y, z)) = Point (x, y, z)
 timesSign Zero _ = Point (0, 0, 0)
 timesSign Neg (Point (x, y, z)) = Point (-x, -y, -z)
+
+negativeSign :: Sign -> Sign
+negativeSign Pos = Neg
+negativeSign Zero = Zero
+negativeSign Neg = Pos
 
 octahedron :: Polyhedron (Axis, Sign) (Sign, Sign, Sign)
 octahedron = generatePolyhedron vertexGenerators vgToPoint faceGenerators fgToFace
@@ -170,6 +179,31 @@ tetrahedron = generatePolyhedron vertexGenerators vgToPoint faceGenerators fgToF
           signMultiplier xSign * signMultiplier ySign * signMultiplier zSign == -1
       ]
     fgToFace (xSign, ySign, zSign) = filter (\(xSign', ySign', zSign') -> xSign == xSign' || ySign == ySign' || zSign == zSign') vertexGenerators
+
+data DodecahedronVertex
+  = OctantVertex (Sign, Sign, Sign)
+  | AxisVertex Axis Sign Sign
+  deriving (Eq, Ord)
+
+dodecahedron :: Polyhedron DodecahedronVertex (Axis, Sign, Sign)
+dodecahedron = generatePolyhedron vertexGenerators vgToPoint faceGenerators fgToFace
+  where
+    vertexGenerators =
+      [OctantVertex (xSign, ySign, zSign) | xSign <- plusMinus, ySign <- plusMinus, zSign <- plusMinus]
+        <> [AxisVertex axis majorAxisSign minorAxisSign | axis <- axes, majorAxisSign <- plusMinus, minorAxisSign <- plusMinus]
+    phi = (sqrt 5 + 1) / 2
+    phiInverse = (sqrt 5 - 1) / 2
+    vgToPoint (OctantVertex (xSign, ySign, zSign)) = Point (signMultiplier xSign, signMultiplier ySign, signMultiplier zSign)
+    vgToPoint (AxisVertex axis majorAxisSign minorAxisSign) =
+      Point . alignedToAxis axis $ (signMultiplier majorAxisSign * phi, signMultiplier minorAxisSign * phiInverse, 0)
+    faceGenerators = [(axis, majorAxisSign, minorAxisSign) | axis <- axes, majorAxisSign <- plusMinus, minorAxisSign <- plusMinus]
+    fgToFace (axis, majorAxisSign, minorAxisSign) =
+      [ AxisVertex axis majorAxisSign minorAxisSign,
+        OctantVertex . alignedToAxis axis $ (majorAxisSign, minorAxisSign, minorAxisSign),
+        AxisVertex (prevAxis axis) minorAxisSign majorAxisSign,
+        OctantVertex . alignedToAxis axis $ (majorAxisSign, negativeSign minorAxisSign, minorAxisSign),
+        AxisVertex axis majorAxisSign (negativeSign minorAxisSign)
+      ]
 
 dualPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron f v
 dualPolyhedron (Polyhedron {vertices, faces}) = Polyhedron {vertices = dualVertices, faces = dualFaces}
