@@ -34,8 +34,8 @@ polyhedronVolume polyhedron = sum pyramidVolumes
     pyramidVolumes = pyramidVolume <$> facePoints
 
 volumeNormalize :: (Ord v) => Polyhedron v f -> Polyhedron v f
-volumeNormalize p = Polyhedron {vertices = Map.map (elementWise (* sizeMultiplier)) vertices, faces}
+volumeNormalize p = Polyhedron {vertexPoints = Map.map (elementWise (* sizeMultiplier)) vertexPoints, vertices, faces}
   where
-    (Polyhedron {vertices, faces}) = p
+    (Polyhedron {vertexPoints, vertices, faces}) = p
     volume = polyhedronVolume p
     sizeMultiplier = volume ** (-(1 / 3))

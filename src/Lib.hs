@@ -3,11 +3,13 @@ module Lib
   )
 where
 
+import Operators
 import Platonic
 import Polyhedron
 import Volume
 
 main :: IO ()
 main = do
-  printPolyhedron icosahedron
-  print . polyhedronVolume $ icosahedron
+  let dual = dualPolyhedron octahedron
+  printPolyhedron dual
+  print . polyhedronVolume $ dual
