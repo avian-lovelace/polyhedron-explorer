@@ -64,10 +64,20 @@ printPolyhedron polyhedron = do
 -- invertMap :: (Ord a, Ord b) => Map a [b] -> Map b [a]
 -- invertMap = undefined
 
+-- Idea: Each edge should have exactly two vertices as endpoints and two incident faces. You can calculate this via the
+-- vertex orders of each face and via the face orders around each vertex. If the polyhedron is valid, these two
+-- calculations should lead to the same result.
+-- Also, if you want each face/vertex order to be oriented the same way (let's say counterclockwise), you can check that
+-- the vertex-vertex pair and face-face pars occur in opposite orders in their ocurrences in the face/vertex orders.
+
 -- isValidPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Bool
 -- isValidPolyhedron Polyhedron {vertices, faces} = undefined
 --   where
 --     getAdjacentVertices vertex face = getAdjacentElements vertex $ faces ! face
 --     haveSharedVertex (v1, v2) (v1', v2') = v1 == v1' || v1 == v2' || v2 == v1' || v2 == v2'
 
--- get
+-- pairsToListMap :: (Ord k) => [(k, v)] -> Map k [v]
+-- pairsToListMap pairs = Map.fromListWith (++) [(k, [v]) | (k, v) <- pairs]
+
+-- listMapToPairs :: Map k [v] -> [(k, v)]
+-- listMapToPairs listMap = [(k, v) | (k, vs) <- Map.toList listMap, v <- vs]
