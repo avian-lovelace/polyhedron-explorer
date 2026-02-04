@@ -29,6 +29,7 @@ library
       Operators
       Platonic
       Polyhedron
+      Projection
       Space
       Volume
   other-modules:

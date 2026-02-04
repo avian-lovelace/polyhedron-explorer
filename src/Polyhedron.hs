@@ -3,6 +3,8 @@ module Polyhedron
     generatePolyhedron,
     toFacePoints,
     printPolyhedron,
+    Face,
+    getFaces,
   )
 where
 
@@ -81,3 +83,11 @@ printPolyhedron polyhedron = do
 
 -- listMapToPairs :: Map k [v] -> [(k, v)]
 -- listMapToPairs listMap = [(k, v) | (k, vs) <- Map.toList listMap, v <- vs]
+
+type Face v = [(v, Point)]
+
+getFaces :: (Ord v) => Polyhedron v f -> [Face v]
+getFaces polyhedron = [toFace vertexOrder | (_, vertexOrder) <- Map.toList faces]
+  where
+    Polyhedron {vertexPoints, faces} = polyhedron
+    toFace vertexOrder = [(v, vertexPoints ! v) | v <- vertexOrder]
