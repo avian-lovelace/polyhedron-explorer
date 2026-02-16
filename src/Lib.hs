@@ -14,8 +14,9 @@ import Volume
 
 main :: IO ()
 main = do
-  let faces = getFaces dodecahedron
-  let faces2d = [faceTo2D . vectorizeFace $ f | f <- faces]
+  let faces = getFaces icosahedron
+  let (n1, n2) = offsetNormalBasis
+  let faces2d = [projectFace n1 n2 f | f <- faces]
   -- let getFaceString face = intercalate ", " $ show . snd <$> face
-  let svgString = getSvgString $ take 1 faces2d
+  let svgString = getSvgString faces2d
   writeFile "./out/output.svg" svgString

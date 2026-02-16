@@ -1,4 +1,10 @@
-module Projection (vectorizeFace, faceTo2D) where
+module Projection
+  ( vectorizeFace,
+    faceTo2D,
+    projectFace,
+    offsetNormalBasis,
+  )
+where
 
 import GHC.Float (int2Double)
 import Polyhedron
@@ -44,3 +50,16 @@ faceTo2D face = Polygon [(vertex, Point2D (dotProduct vector n1, dotProduct vect
   where
     (_, v1) : (_, v2) : _ = face
     (n1, n2) = orthonormalBasis v1 v2
+
+projectFace :: Vector -> Vector -> Face v -> Polygon v
+projectFace n1 n2 face =
+  Polygon
+    [ (vertex, Point2D (dotProduct vector n1, dotProduct vector n2))
+      | (vertex, point) <- face,
+        let vector = toOriginVector point
+    ]
+  where
+    toOriginVector (Point (x, y, z)) = Vector (x, y, z)
+
+offsetNormalBasis :: (Vector, Vector)
+offsetNormalBasis = orthonormalBasis (Vector (1, 3, 3)) (Vector (4, 2, 1))
