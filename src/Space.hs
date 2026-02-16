@@ -14,6 +14,8 @@ module Space
     signMultiplier,
     timesSign,
     negativeSign,
+    Point2D (..),
+    Polygon (..),
   )
 where
 
@@ -83,3 +85,10 @@ negativeSign :: Sign -> Sign
 negativeSign Pos = Neg
 negativeSign Zero = Zero
 negativeSign Neg = Pos
+
+newtype Point2D = Point2D (Double, Double)
+
+instance Show Point2D where
+  show (Point2D (x, y)) = "(" ++ show x ++ ", " ++ show y ++ ")"
+
+newtype Polygon v = Polygon [(v, Point2D)]

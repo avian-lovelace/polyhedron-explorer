@@ -33,19 +33,14 @@ orthonormalBasis v1 v2 = (n1, n2)
 
 type VectorFace v = [(v, Vector)]
 
-newtype Point2D = Point2D (Double, Double)
-
-instance Show Point2D where
-  show (Point2D (x, y)) = "(" ++ show x ++ ", " ++ show y ++ ")"
-
 vectorizeFace :: Face v -> VectorFace v
 vectorizeFace face = [(vertex, differenceVector faceCenter vertexPoint) | (vertex, vertexPoint) <- face]
   where
     vertexPoints = [point | (_, point) <- face]
     faceCenter = elementWise (/ (int2Double $ length vertexPoints)) $ foldr (elementWise' (+)) zero vertexPoints
 
-faceTo2D :: VectorFace v -> [(v, Point2D)]
-faceTo2D face = [(vertex, Point2D (dotProduct vector n1, dotProduct vector n2)) | (vertex, vector) <- face]
+faceTo2D :: VectorFace v -> Polygon v
+faceTo2D face = Polygon [(vertex, Point2D (dotProduct vector n1, dotProduct vector n2)) | (vertex, vector) <- face]
   where
     (_, v1) : (_, v2) : _ = face
     (n1, n2) = orthonormalBasis v1 v2

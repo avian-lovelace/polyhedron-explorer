@@ -31,6 +31,7 @@ library
       Polyhedron
       Projection
       Space
+      Svg
       Volume
   other-modules:
       Paths_polyhedron_explorer
