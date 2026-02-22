@@ -64,7 +64,7 @@ octahedron = generatePolyhedron vertexGenerators vgToPoint vgToFaceOrder faceGen
 data DodecahedronVertex
   = OctantVertex Octant
   | AxisVertex Axis Sign Sign
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 type IcosahedronVertex = (Axis, Sign, Sign)
 
@@ -79,13 +79,13 @@ dodecahedronFace (axis, majorAxisSign, minorAxisSign) =
 
 icosahedronFace :: DodecahedronVertex -> [IcosahedronVertex]
 icosahedronFace (OctantVertex (xSign, ySign, zSign)) =
-  [ (X, xSign, ySign),
-    (Y, ySign, zSign),
-    (Z, zSign, xSign)
+  [ (X, xSign, zSign),
+    (Y, ySign, xSign),
+    (Z, zSign, ySign)
   ]
 icosahedronFace (AxisVertex axis majorAxisSign minorAxisSign) =
   [ (axis, majorAxisSign, majorAxisSign),
-    (prevAxis axis, minorAxisSign, majorAxisSign),
+    (nextAxis axis, minorAxisSign, majorAxisSign),
     (axis, majorAxisSign, negativeSign majorAxisSign)
   ]
 

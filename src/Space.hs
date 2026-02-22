@@ -8,6 +8,7 @@ module Space
     unitAxis,
     alignedToAxis,
     prevAxis,
+    nextAxis,
     Sign (..),
     plusMinus,
     getSign,
@@ -35,7 +36,7 @@ elementWise f (Point (x, y, z)) = Point (f x, f y, f z)
 elementWise' :: (Double -> Double -> Double) -> Point -> Point -> Point
 elementWise' f (Point (x1, y1, z1)) (Point (x2, y2, z2)) = Point (f x1 x2, f y1 y2, f z1 z2)
 
-data Axis = X | Y | Z deriving (Eq, Ord)
+data Axis = X | Y | Z deriving (Eq, Ord, Show)
 
 axes :: [Axis]
 axes = [X, Y, Z]
@@ -54,6 +55,11 @@ prevAxis :: Axis -> Axis
 prevAxis X = Z
 prevAxis Y = X
 prevAxis Z = Y
+
+nextAxis :: Axis -> Axis
+nextAxis X = Y
+nextAxis Y = Z
+nextAxis Z = X
 
 data Sign = Neg | Zero | Pos deriving (Eq, Ord)
 
