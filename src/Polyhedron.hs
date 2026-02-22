@@ -3,6 +3,9 @@ module Polyhedron
     generatePolyhedron,
     toFacePoints,
     printPolyhedron,
+    Edge (..),
+    getEdges,
+    getEdges',
     Face,
     getFaces,
   )
@@ -12,6 +15,7 @@ import Data.Foldable (traverse_)
 import Data.List (intercalate)
 import Data.Map (Map, (!))
 import qualified Data.Map as Map
+import Pair
 import Space
 
 data Polyhedron v f = Polyhedron
@@ -51,17 +55,22 @@ printPolyhedron polyhedron = do
 --   let nextIndex = (centerIndex + 1) `mod` xsLength
 --   return (xs !! prevIndex, xs !! nextIndex)
 
--- getAdjacentPairs :: [a] -> [(a, a)]
--- getAdjacentPairs xs = getAdjacentPairs' [] xs
---   where
---     firstElem = head xs
---     getAdjacentPairs' currentPairs (nextElem : nextNextElem : restElems) =
---       getAdjacentPairs' ((nextElem, nextNextElem) : currentPairs) (nextNextElem : restElems)
---     getAdjacentPairs' currentPairs [lastElem] = (lastElem, firstElem) : currentPairs
---     getAdjacentPairs' _currentPairs [] = undefined
+data Edge v f = Edge (Pair v) (Pair f)
+  deriving (Ord, Eq, Show)
 
--- getAdjacentOrderedPairs :: (Ord a) => [a] -> [(a, a)]
--- getAdjacentOrderedPairs xs = [if x1 < x2 then (x1, x2) else (x2, x1) | (x1, x2) <- getAdjacentPairs xs]
+getEdges :: (Ord v, Ord f) => Polyhedron v f -> [Edge v f]
+getEdges (Polyhedron {faces}) = edgeList
+  where
+    faceEdgeList = [(vertexPair, [face]) | (face, orderedVertices) <- Map.toList faces, vertexPair <- getAdjacentPairs orderedVertices]
+    edgeToFacesMap = Map.fromListWith (++) faceEdgeList
+    edgeList = [Edge vPair (pairFromList fPair) | (vPair, fPair) <- Map.toList edgeToFacesMap]
+
+getEdges' :: (Ord v, Ord f) => Polyhedron v f -> [Edge v f]
+getEdges' (Polyhedron {vertices}) = edgeList
+  where
+    vertexEdgeList = [(facePair, [vertex]) | (vertex, orderedFaces) <- Map.toList vertices, facePair <- getAdjacentPairs orderedFaces]
+    edgeToVerticesMap = Map.fromListWith (++) vertexEdgeList
+    edgeList = [Edge (pairFromList vPair) fPair | (fPair, vPair) <- Map.toList edgeToVerticesMap]
 
 -- invertMap :: (Ord a, Ord b) => Map a [b] -> Map b [a]
 -- invertMap = undefined

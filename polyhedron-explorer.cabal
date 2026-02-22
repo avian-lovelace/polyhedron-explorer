@@ -27,6 +27,7 @@ library
   exposed-modules:
       Lib
       Operators
+      Pair
       Platonic
       Polyhedron
       Projection
