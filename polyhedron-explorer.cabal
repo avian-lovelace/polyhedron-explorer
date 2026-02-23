@@ -34,6 +34,7 @@ library
       Projection
       Space
       Svg
+      Validation
       Volume
   other-modules:
       Paths_polyhedron_explorer

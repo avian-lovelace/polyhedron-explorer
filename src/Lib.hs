@@ -3,11 +3,15 @@ module Lib
   )
 where
 
-import Display (displaySolid)
+import Display
 import Operators
 import Platonic
+import Validation
 
 main :: IO ()
 main = do
   let icosadodecahedron = amboPolyhedron dodecahedron
-  displaySolid "output.svg" icosadodecahedron
+  case validatePolyhedron icosadodecahedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      displaySolid "output.svg" icosadodecahedron
