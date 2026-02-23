@@ -47,14 +47,6 @@ printPolyhedron polyhedron = do
   let printFace face = putStrLn $ getFaceString face
   traverse_ printFace facePoints
 
--- getAdjacentElements :: (Eq a) => a -> [a] -> Maybe (a, a)
--- getAdjacentElements center xs = do
---   centerIndex <- elemIndex center xs
---   let xsLength = length xs
---   let prevIndex = (centerIndex + xsLength - 1) `mod` xsLength
---   let nextIndex = (centerIndex + 1) `mod` xsLength
---   return (xs !! prevIndex, xs !! nextIndex)
-
 data Edge v f = Edge (Pair v) (Pair f)
   deriving (Ord, Eq, Show)
 
@@ -65,33 +57,15 @@ getEdges (Polyhedron {faces}) = edgeList
     edgeToFacesMap = Map.fromListWith (++) faceEdgeList
     edgeList = [Edge vPair (pairFromList fPair) | (vPair, fPair) <- Map.toList edgeToFacesMap]
 
+{- Get the edge information using the face orders around each vertex rather than using the vertex orders around each
+  face. If the polyhedron is defined correctly, getEdges' should give the same edges as getEdges, but possible in a
+  different order. -}
 getEdges' :: (Ord v, Ord f) => Polyhedron v f -> [Edge v f]
 getEdges' (Polyhedron {vertices}) = edgeList
   where
     vertexEdgeList = [(facePair, [vertex]) | (vertex, orderedFaces) <- Map.toList vertices, facePair <- getAdjacentPairs orderedFaces]
     edgeToVerticesMap = Map.fromListWith (++) vertexEdgeList
     edgeList = [Edge (pairFromList vPair) fPair | (fPair, vPair) <- Map.toList edgeToVerticesMap]
-
--- invertMap :: (Ord a, Ord b) => Map a [b] -> Map b [a]
--- invertMap = undefined
-
--- Idea: Each edge should have exactly two vertices as endpoints and two incident faces. You can calculate this via the
--- vertex orders of each face and via the face orders around each vertex. If the polyhedron is valid, these two
--- calculations should lead to the same result.
--- Also, if you want each face/vertex order to be oriented the same way (let's say counterclockwise), you can check that
--- the vertex-vertex pair and face-face pars occur in opposite orders in their ocurrences in the face/vertex orders.
-
--- isValidPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Bool
--- isValidPolyhedron Polyhedron {vertices, faces} = undefined
---   where
---     getAdjacentVertices vertex face = getAdjacentElements vertex $ faces ! face
---     haveSharedVertex (v1, v2) (v1', v2') = v1 == v1' || v1 == v2' || v2 == v1' || v2 == v2'
-
--- pairsToListMap :: (Ord k) => [(k, v)] -> Map k [v]
--- pairsToListMap pairs = Map.fromListWith (++) [(k, [v]) | (k, v) <- pairs]
-
--- listMapToPairs :: Map k [v] -> [(k, v)]
--- listMapToPairs listMap = [(k, v) | (k, vs) <- Map.toList listMap, v <- vs]
 
 type Face v = [(v, Point)]
 

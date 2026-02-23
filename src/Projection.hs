@@ -1,6 +1,7 @@
 module Projection
   ( vectorizeFace,
     faceTo2D,
+    isPositivelyOriented,
     projectFace,
     offsetNormalBasis,
   )
@@ -50,6 +51,14 @@ faceTo2D face = Polygon [(vertex, Point2D (dotProduct vector n1, dotProduct vect
   where
     (_, v1) : (_, v2) : _ = face
     (n1, n2) = orthonormalBasis v1 v2
+
+isPositivelyOriented :: Vector -> Vector -> Face v -> Bool
+isPositivelyOriented n1 n2 face = dotProduct n3 faceCenterVector > 0
+  where
+    n3 = crossProduct n1 n2
+    vertexPoints = [point | (_, point) <- face]
+    faceCenter = elementWise (/ (int2Double $ length vertexPoints)) $ foldr (elementWise' (+)) zero vertexPoints
+    faceCenterVector = differenceVector zero faceCenter
 
 projectFace :: Vector -> Vector -> Face v -> Polygon v
 projectFace n1 n2 face =

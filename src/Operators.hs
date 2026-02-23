@@ -17,7 +17,7 @@ dualPolyhedron (Polyhedron {vertexPoints, vertices, faces}) = Polyhedron {vertex
     faceCenter vertexOrder = elementWise (/ (int2Double $ length vertexOrder)) $ foldr (elementWise' (+) . (vertexPoints !)) zero vertexOrder
     faceCenters = Map.map faceCenter faces
 
-amboPolyhedron :: (Ord v, Ord f, Show v, Show f) => Polyhedron v f -> Polyhedron (Edge v f) (Either v f)
+amboPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron (Edge v f) (Either v f)
 amboPolyhedron polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices = vertices', faces = faces'}
   where
     (Polyhedron {vertexPoints, vertices, faces}) = polyhedron
