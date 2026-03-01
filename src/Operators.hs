@@ -1,22 +1,57 @@
 module Operators
   ( dualPolyhedron,
+    dualPolyhedron',
     amboPolyhedron,
+    amboPolyhedron',
   )
 where
 
 import Data.Map ((!))
 import qualified Data.Map as Map
 import GHC.Float (int2Double)
+import Midsphere
 import Pair
 import Polyhedron
+import Projection
 import Space
 
-dualPolyhedron :: (Ord v) => Polyhedron v f -> Polyhedron f v
-dualPolyhedron (Polyhedron {vertexPoints, vertices, faces}) = Polyhedron {vertexPoints = faceCenters, vertices = faces, faces = vertices}
+{- Perform the dual operation, which produces a polyhedron with a vertex for each face of the original polyhedron and
+  vice versa. This produces for example a octahedron from a cube and a dodecahdron from an icosahedron.
+
+  This version of the dual operator produces the canonical dual, where the dual vertex positions are caulcuated as the
+  projective reciprocation of the faces about the midsphere. This should produce a valid polyhedron for all polyhedra
+  with a midsphere. This should include all platonic, Archimedian, and Catalan polyhedra. -}
+dualPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron f v
+dualPolyhedron polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices = faces, faces = vertices}
+  where
+    Polyhedron {vertexPoints, vertices, faces} = polyhedron
+    midRadius = getMidsphereRadius polyhedron
+    dualVertex vertexOrder = getMidspherePolar midRadius p1 p2 p3
+      where
+        v1 : v2 : v3 : _ = vertexOrder
+        p1 = vertexPoints ! v1
+        p2 = vertexPoints ! v2
+        p3 = vertexPoints ! v3
+    vertexPoints' = Map.map dualVertex faces
+
+{- Perform the dual operation, which produces a polyhedron with a vertex for each face of the original polyhedron and
+  vice versa. This produces for example a octahedron from a cube and a dodecahdron from an icosahedron.
+
+  This version of the dual operator produces uses a simplified vertex calculation algorithm, where the dual vertex
+  positions are calculated as the centroids of the faces. This produces a valid polyhedron for all Platonic solids.
+  However, for other solids, it may produce invalid polyhedra with non-flat faces. -}
+dualPolyhedron' :: (Ord v) => Polyhedron v f -> Polyhedron f v
+dualPolyhedron' (Polyhedron {vertexPoints, vertices, faces}) = Polyhedron {vertexPoints = faceCenters, vertices = faces, faces = vertices}
   where
     faceCenter vertexOrder = elementWise (/ (int2Double $ length vertexOrder)) $ foldr (elementWise' (+) . (vertexPoints !)) zero vertexOrder
     faceCenters = Map.map faceCenter faces
 
+{- Perform the ambo operation, which produces a polyhedron with a vertex for each edge of the original polyhedron and a
+  face for each vertex and face of the original polyhedron. This produces for example a cuboctahedron from a cube and a
+  icosadodecahedron from an icosahedron.
+
+  This version of the dual operator produces calculates the vertex positions as the centers of the edges. I don't have
+  good intuition about when this does or doesn't produce valid polyhedra with flat faces. -}
 amboPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron (Edge v f) (Either v f)
 amboPolyhedron polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices = vertices', faces = faces'}
   where
@@ -32,6 +67,50 @@ amboPolyhedron polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices =
             let p1 = vertexPoints ! v1,
             let p2 = vertexPoints ! v2,
             let edgeCenter = elementWise (/ 2) $ elementWise' (+) p1 p2
+        ]
+    vertices' =
+      Map.fromList
+        [ (edge, [Left v1, Right f1, Left v2, Right f2])
+          | edge <- edges,
+            let Edge (Pair v1 v2) (Pair f1 f2) = edge
+        ]
+    vertexFaces =
+      [ (Left vertex, incidentEdges)
+        | (vertex, orderedFaces) <- Map.toList vertices,
+          let facePairs = getAdjacentPairs orderedFaces,
+          let incidentEdges = [facePairToEdgeMap ! fPair | fPair <- facePairs]
+      ]
+    faceFaces =
+      [ (Right face, incidentEdges)
+        | (face, orderedVertices) <- Map.toList faces,
+          let vertexPairs = getAdjacentPairs orderedVertices,
+          let incidentEdges = [vertexPairToEdgeMap ! vPair | vPair <- vertexPairs]
+      ]
+    faces' = Map.fromList $ vertexFaces ++ faceFaces
+
+{- Perform the ambo operation, which produces a polyhedron with a vertex for each edge of the original polyhedron and a
+  face for each vertex and face of the original polyhedron. This produces for example a cuboctahedron from a cube and a
+  icosadodecahedron from an icosahedron.
+
+  This version of the dual operator produces calculates the vertex positions as the tangency points of the midsphere on
+  each edge. The idea was that this might get you a rhombicosidodecahedron with square faces from a rhomic
+  triacontahedron, but this did not work. I'm keeping this around because I feel like it might produce valid polyhedra
+  with flat faces in some cases where the simpler method would fail, but I'm not sure if that's true. -}
+amboPolyhedron' :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron (Edge v f) (Either v f)
+amboPolyhedron' polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices = vertices', faces = faces'}
+  where
+    (Polyhedron {vertexPoints, vertices, faces}) = polyhedron
+    edges = getEdges polyhedron
+    facePairToEdgeMap = Map.fromList [(fPair, edge) | edge <- edges, let Edge _ fPair = edge]
+    vertexPairToEdgeMap = Map.fromList [(vPair, edge) | edge <- edges, let Edge vPair _ = edge]
+    vertexPoints' =
+      Map.fromList
+        [ (edge, midsphereTangent)
+          | edge <- edges,
+            let Edge (Pair v1 v2) _ = edge,
+            let p1 = vertexPoints ! v1,
+            let p2 = vertexPoints ! v2,
+            let midsphereTangent = projectionOnLine p1 p2 zero
         ]
     vertices' =
       Map.fromList

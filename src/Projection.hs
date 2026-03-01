@@ -1,9 +1,17 @@
 module Projection
-  ( vectorizeFace,
+  ( differenceVector,
+    distance,
+    norm,
+    normalize,
+    (/*/),
+    vectorEndpoint,
+    vectorizeFace,
     faceTo2D,
     isPositivelyOriented,
     projectFace,
     offsetNormalBasis,
+    projectionOnLine,
+    projectionOnPlane,
   )
 where
 
@@ -25,18 +33,30 @@ c /*/ (Vector (x, y, z)) = Vector (c * x, c * y, c * z)
 differenceVector :: Point -> Point -> Vector
 differenceVector (Point (x1, y1, z1)) (Point (x2, y2, z2)) = Vector (x2 - x1, y2 - y1, z2 - z1)
 
+vectorEndpoint :: Point -> Vector -> Point
+vectorEndpoint (Point (x1, y1, z1)) (Vector (x2, y2, z2)) = Point (x1 + x2, y1 + y2, z1 + z2)
+
 dotProduct :: Vector -> Vector -> Double
 dotProduct (Vector (x1, y1, z1)) (Vector (x2, y2, z2)) = x1 * x2 + y1 * y2 + z1 * z2
 
 crossProduct :: Vector -> Vector -> Vector
 crossProduct (Vector (x1, y1, z1)) (Vector (x2, y2, z2)) = Vector (y1 * z2 - y2 * z1, z1 * x2 - z2 * x1, x1 * y2 - x2 * y1)
 
+norm :: Vector -> Double
+norm v = sqrt (dotProduct v v)
+
+normalize :: Vector -> Vector
+normalize v = (1 / norm v) /*/ v
+
+distance :: Point -> Point -> Double
+distance p1 p2 = norm $ differenceVector p1 p2
+
 orthonormalBasis :: Vector -> Vector -> (Vector, Vector)
 orthonormalBasis v1 v2 = (n1, n2)
   where
-    n1 = (1 / sqrt (dotProduct v1 v1)) /*/ v1
+    n1 = normalize v1
     n2' = v2 /-/ (dotProduct n1 v2 /*/ n1)
-    n2 = (1 / sqrt (dotProduct n2' n2')) /*/ n2'
+    n2 = normalize n2'
 
 type VectorFace v = [(v, Vector)]
 
@@ -72,3 +92,22 @@ projectFace n1 n2 face =
 
 offsetNormalBasis :: (Vector, Vector)
 offsetNormalBasis = orthonormalBasis (Vector (1, 3, 3)) (Vector (4, 2, 1))
+
+projectionOnLine :: Point -> Point -> Point -> Point
+projectionOnLine l1 l2 p = vectorEndpoint p orthogonalComponent
+  where
+    lineVector = normalize $ differenceVector l2 l1
+    pVector = differenceVector p l2
+    parallelComponent = dotProduct lineVector pVector /*/ lineVector
+    orthogonalComponent = pVector /-/ parallelComponent
+
+projectionOnPlane :: Point -> Point -> Point -> Point -> Point
+projectionOnPlane s1 s2 s3 p = vectorEndpoint p orthogonalComponent
+  where
+    plane1 = differenceVector s2 s1
+    plane2 = differenceVector s3 s1
+    (n1, n2) = orthonormalBasis plane1 plane2
+    pVector = differenceVector p s1
+    parallelComponent1 = dotProduct n1 pVector /*/ n1
+    parallelComponent2 = dotProduct n2 pVector /*/ n2
+    orthogonalComponent = pVector /-/ parallelComponent1 /-/ parallelComponent2
