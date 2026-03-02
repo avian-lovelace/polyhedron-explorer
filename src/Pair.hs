@@ -1,6 +1,7 @@
 module Pair
   ( Pair (..),
     pair,
+    pairContains,
     pairFromList,
     getAdjacentPairs,
   )
@@ -11,6 +12,9 @@ data Pair a = Pair a a
 
 pair :: (Ord a) => a -> a -> Pair a
 pair x y = if x > y then Pair y x else Pair x y
+
+pairContains :: (Eq a) => a -> Pair a -> Bool
+pairContains x (Pair p1 p2) = x == p1 || x == p2
 
 pairFromList :: (Ord a) => [a] -> Pair a
 pairFromList [x, y] = pair x y

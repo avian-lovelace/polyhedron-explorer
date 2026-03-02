@@ -10,9 +10,8 @@ import Validation
 
 main :: IO ()
 main = do
-  let icosadodecahedron = amboPolyhedron cube
-  let triacontahedron = dualPolyhedron icosadodecahedron
-  case validatePolyhedron triacontahedron of
+  let foo = expandedPolyhedron icosahedron
+  case validatePolyhedron foo of
     Left errorMessage -> putStrLn errorMessage
     Right () -> do
-      displaySolid "output.svg" triacontahedron
+      displaySolid "output.svg" foo

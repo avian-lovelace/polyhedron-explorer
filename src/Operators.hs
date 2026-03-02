@@ -3,6 +3,7 @@ module Operators
     dualPolyhedron',
     amboPolyhedron,
     amboPolyhedron',
+    expandedPolyhedron,
   )
 where
 
@@ -131,3 +132,53 @@ amboPolyhedron' polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices 
           let incidentEdges = [vertexPairToEdgeMap ! vPair | vPair <- vertexPairs]
       ]
     faces' = Map.fromList $ vertexFaces ++ faceFaces
+
+data ExpandedFace v f
+  = VertexFace v
+  | FaceFace f
+  | EdgeFace (Edge v f)
+  deriving (Eq, Ord)
+
+expandedPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron (v, f) (ExpandedFace v f)
+expandedPolyhedron polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices = vertices', faces = faces'}
+  where
+    (Polyhedron {vertexPoints, vertices, faces}) = polyhedron
+    edges = getEdges polyhedron
+    faceCenters = Map.map (\vertexOrder -> elementWise (/ (int2Double $ length vertexOrder)) $ foldr (elementWise' (+) . (vertexPoints !)) zero vertexOrder) faces
+    faceScaleFactor = faceCenterDistance / (edgeLength + faceCenterDistance)
+      where
+        Edge (Pair v1 v2) (Pair f1 f2) = head edges
+        edgeLength = distance (vertexPoints ! v1) (vertexPoints ! v2)
+        faceCenterDistance = distance (faceCenters ! f1) (faceCenters ! f2)
+    vertexPoints' =
+      Map.fromList
+        [ ((vertex, face), vertexPoint')
+          | (face, vertexOrder) <- Map.toList faces,
+            vertex <- vertexOrder,
+            let vertexPoint = vertexPoints ! vertex,
+            let faceCenter = faceCenters ! face,
+            let vertexVector = differenceVector faceCenter vertexPoint,
+            let scaledVertexVector = faceScaleFactor /*/ vertexVector,
+            let vertexPoint' = vectorEndpoint faceCenter scaledVertexVector
+        ]
+    vertices' =
+      Map.fromList
+        [ ((vertex, face), [VertexFace vertex, EdgeFace edge1, FaceFace face, EdgeFace edge2])
+          | (face, vertexOrder) <- Map.toList faces,
+            vertex <- vertexOrder,
+            let [edge1, edge2] = filter (\(Edge pv pf) -> pairContains vertex pv && pairContains face pf) edges
+        ]
+    vertexFaces =
+      [ (VertexFace vertex, map (vertex,) faceOrder)
+        | (vertex, faceOrder) <- Map.toList vertices
+      ]
+    faceFaces =
+      [ (FaceFace face, map (,face) vertexOrder)
+        | (face, vertexOrder) <- Map.toList faces
+      ]
+    edgeFaces =
+      [ (EdgeFace edge, [(v1, f1), (v1, f2), (v2, f2), (v2, f1)])
+        | edge <- edges,
+          let (Edge (Pair v1 v2) (Pair f1 f2)) = edge
+      ]
+    faces' = Map.fromList $ vertexFaces ++ faceFaces ++ edgeFaces
