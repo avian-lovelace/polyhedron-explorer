@@ -10,7 +10,8 @@ import Validation
 
 main :: IO ()
 main = do
-  let foo = dualPolyhedron . expandedPolyhedron $ icosahedron
+  let rhombic = dualPolyhedron . amboPolyhedron $ dodecahedron
+  let foo = expandedPolyhedron rhombic
   case validatePolyhedron foo of
     Left errorMessage -> putStrLn errorMessage
     Right () -> do

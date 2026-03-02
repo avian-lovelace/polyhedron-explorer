@@ -21,7 +21,7 @@ import Space
 
   This version of the dual operator produces the canonical dual, where the dual vertex positions are caulcuated as the
   projective reciprocation of the faces about the midsphere. This should produce a valid polyhedron for all polyhedra
-  with a midsphere. This should include all platonic, Archimedian, and Catalan polyhedra. -}
+  with a midsphere. This should include all Platonic, Archimedian, and Catalan polyhedra. -}
 dualPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron f v
 dualPolyhedron polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices = faces, faces = vertices}
   where
@@ -133,12 +133,17 @@ amboPolyhedron' polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices 
       ]
     faces' = Map.fromList $ vertexFaces ++ faceFaces
 
-data ExpandedFace v f
-  = VertexFace v
-  | FaceFace f
-  | EdgeFace (Edge v f)
-  deriving (Eq, Ord)
+{- Perform the expand operation, which produces a polyhedron with a face for every vertex, face, and edge of the
+  original polyhedron. This is topologically equivalent to applying the ambo operation twice. This produces for example
+  a rhombicuboctahedron from a cube and a rhombicosidodecahedron from an icosahedron.
 
+  The vertex point calculation here produces a valid equilateral polyhedron for all Platonic solids. As the value of
+  faceScaleFactor ranges from zero to one, you will get topologically equivalent polyhedra, but the edge faces will be
+  rectanges of different dimensions.
+
+  This method doesn't work for all Archimedean and Catalan solids, as the face scaling trick depends on the oritinal
+  polyhedron and its dual both being equilateral. However, it should work for both the rhomic dodecahedron and the
+  rhombic triacontahedron. -}
 expandedPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron (v, f) (ExpandedFace v f)
 expandedPolyhedron polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices = vertices', faces = faces'}
   where
@@ -182,3 +187,9 @@ expandedPolyhedron polyhedron = Polyhedron {vertexPoints = vertexPoints', vertic
           let (Edge (Pair v1 v2) (Pair f1 f2)) = edge
       ]
     faces' = Map.fromList $ vertexFaces ++ faceFaces ++ edgeFaces
+
+data ExpandedFace v f
+  = VertexFace v
+  | FaceFace f
+  | EdgeFace (Edge v f)
+  deriving (Eq, Ord)
