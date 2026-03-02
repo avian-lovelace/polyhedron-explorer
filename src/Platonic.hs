@@ -110,7 +110,7 @@ icosahedron = generatePolyhedron vertexGenerators vgToPoint vgToFaceOrder faceGe
     vertexGenerators = [(axis, majorAxisSign, minorAxisSign) | axis <- axes, majorAxisSign <- plusMinus, minorAxisSign <- plusMinus]
     phi = (sqrt 5 + 1) / 2
     vgToPoint (axis, majorAxisSign, minorAxisSign) =
-      Point . alignedToAxis axis $ (signMultiplier majorAxisSign * phi, signMultiplier minorAxisSign, 0)
+      Point . alignedToAxis axis $ (signMultiplier majorAxisSign * phi, 0, signMultiplier minorAxisSign)
     vgToFaceOrder = dodecahedronFace
     faceGenerators =
       [OctantVertex (xSign, ySign, zSign) | xSign <- plusMinus, ySign <- plusMinus, zSign <- plusMinus]
