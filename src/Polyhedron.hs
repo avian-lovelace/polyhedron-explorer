@@ -6,8 +6,8 @@ module Polyhedron
     Edge (..),
     getEdges,
     getEdges',
-    Face,
-    getFaces,
+    PointFace,
+    getPointFaces,
   )
 where
 
@@ -67,10 +67,10 @@ getEdges' (Polyhedron {vertices}) = edgeList
     edgeToVerticesMap = Map.fromListWith (++) vertexEdgeList
     edgeList = [Edge (pairFromList vPair) fPair | (fPair, vPair) <- Map.toList edgeToVerticesMap]
 
-type Face v = [(v, Point)]
+type PointFace v = [(v, Point)]
 
-getFaces :: (Ord v) => Polyhedron v f -> [Face v]
-getFaces polyhedron = [toFace vertexOrder | (_, vertexOrder) <- Map.toList faces]
+getPointFaces :: (Ord v) => Polyhedron v f -> Map f (PointFace v)
+getPointFaces polyhedron = Map.map toFace faces
   where
     Polyhedron {vertexPoints, faces} = polyhedron
     toFace vertexOrder = [(v, vertexPoints ! v) | v <- vertexOrder]

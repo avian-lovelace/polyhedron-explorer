@@ -60,7 +60,7 @@ orthonormalBasis v1 v2 = (n1, n2)
 
 type VectorFace v = [(v, Vector)]
 
-vectorizeFace :: Face v -> VectorFace v
+vectorizeFace :: PointFace v -> VectorFace v
 vectorizeFace face = [(vertex, differenceVector faceCenter vertexPoint) | (vertex, vertexPoint) <- face]
   where
     vertexPoints = [point | (_, point) <- face]
@@ -72,7 +72,7 @@ faceTo2D face = Polygon [(vertex, Point2D (dotProduct vector n1, dotProduct vect
     (_, v1) : (_, v2) : _ = face
     (n1, n2) = orthonormalBasis v1 v2
 
-isPositivelyOriented :: Vector -> Vector -> Face v -> Bool
+isPositivelyOriented :: Vector -> Vector -> PointFace v -> Bool
 isPositivelyOriented n1 n2 face = dotProduct n3 faceCenterVector > 0
   where
     n3 = crossProduct n1 n2
@@ -80,7 +80,7 @@ isPositivelyOriented n1 n2 face = dotProduct n3 faceCenterVector > 0
     faceCenter = elementWise (/ (int2Double $ length vertexPoints)) $ foldr (elementWise' (+)) zero vertexPoints
     faceCenterVector = differenceVector zero faceCenter
 
-projectFace :: Vector -> Vector -> Face v -> Polygon v
+projectFace :: Vector -> Vector -> PointFace v -> Polygon v
 projectFace n1 n2 face =
   Polygon
     [ (vertex, Point2D (dotProduct vector n1, dotProduct vector n2))
