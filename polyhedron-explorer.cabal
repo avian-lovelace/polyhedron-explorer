@@ -35,6 +35,7 @@ library
       Projection
       Space
       Svg
+      Unfold
       Validation
       Volume
   other-modules:
