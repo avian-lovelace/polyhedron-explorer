@@ -6,7 +6,7 @@ borderMargin :: Double
 borderMargin = 0.1
 
 styleString :: String
-styleString = "fill:none; stroke:black; stroke-width:0.05"
+styleString = "fill:none; stroke:black; stroke-width:2.00"
 
 getSvgString :: [Polygon v] -> String
 getSvgString polygons = svgStartTag ++ polygonsString ++ svgEndTag

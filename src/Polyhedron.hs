@@ -3,6 +3,7 @@ module Polyhedron
     generatePolyhedron,
     toFacePoints,
     printPolyhedron,
+    rescale,
     Edge (..),
     getEdges,
     getEdges',
@@ -46,6 +47,10 @@ printPolyhedron polyhedron = do
   let getFaceString face = intercalate ", " $ show <$> face
   let printFace face = putStrLn $ getFaceString face
   traverse_ printFace facePoints
+
+rescale :: Double -> Polyhedron v f -> Polyhedron v f
+rescale sizeMultiplier (Polyhedron {vertexPoints, vertices, faces}) =
+  Polyhedron {vertexPoints = Map.map (elementWise (* sizeMultiplier)) vertexPoints, vertices, faces}
 
 data Edge v f = Edge (Pair v) (Pair f)
   deriving (Ord, Eq, Show)
