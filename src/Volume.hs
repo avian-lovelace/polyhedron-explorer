@@ -3,11 +3,11 @@ module Volume
     triangulate,
     pyramidVolume,
     polyhedronVolume,
-    volumeNormalize,
+    volumeNormalizeIcosahedral,
+    volumeNormalizeOctahedral,
   )
 where
 
-import qualified Data.Map as Map
 import Polyhedron
 import Space
 
@@ -33,9 +33,29 @@ polyhedronVolume polyhedron = sum pyramidVolumes
     facePoints = toFacePoints polyhedron
     pyramidVolumes = pyramidVolume <$> facePoints
 
-volumeNormalize :: (Ord v) => Polyhedron v f -> Polyhedron v f
-volumeNormalize p = Polyhedron {vertexPoints = Map.map (elementWise (* sizeMultiplier)) vertexPoints, vertices, faces}
+volumeNormalizeIcosahedral :: (Ord v) => Polyhedron v f -> Polyhedron v f
+volumeNormalizeIcosahedral p = rescale sizeMultiplier p
   where
-    (Polyhedron {vertexPoints, vertices, faces}) = p
     volume = polyhedronVolume p
-    sizeMultiplier = volume ** (-(1 / 3))
+    sizeMultiplier = (standardIcosahedralVolumePxCubed / volume) ** (1 / 3)
+
+volumeNormalizeOctahedral :: (Ord v) => Polyhedron v f -> Polyhedron v f
+volumeNormalizeOctahedral p = rescale sizeMultiplier p
+  where
+    volume = polyhedronVolume p
+    sizeMultiplier = (standardOctahedralVolumePxCubed / volume) ** (1 / 3)
+
+pxPerInch :: Double
+pxPerInch = 96
+
+standardIcosahedralDiameterInches :: Double
+standardIcosahedralDiameterInches = 4.5
+
+standardIcosahedralVolumePxCubed :: Double
+standardIcosahedralVolumePxCubed = (4 / 3) * pi * (standardIcosahedralDiameterInches * pxPerInch / 2) ** 3
+
+standardOctahedralDiameterInches :: Double
+standardOctahedralDiameterInches = 3
+
+standardOctahedralVolumePxCubed :: Double
+standardOctahedralVolumePxCubed = (4 / 3) * pi * (standardOctahedralDiameterInches * pxPerInch / 2) ** 3

@@ -9,12 +9,15 @@ import Platonic
 import Polyhedron
 import Svg
 import Unfold
+import Volume
 
 main :: IO ()
 main = do
-  let poly = rescale 150 . dualPolyhedron . amboPolyhedron $ icosahedron
+  let poly = volumeNormalizeOctahedral . dualPolyhedron . amboPolyhedron $ cube
+  printPolyhedron poly
+  print . polyhedronVolume $ poly
   let unfoldedVertex = unfoldVertexWhere poly Either.isLeft
-  let svgString = getSvgString $ take 3 unfoldedVertex
+  let svgString = getSvgString unfoldedVertex
   let filePath = "./out/" ++ "output.svg"
   writeFile filePath svgString
 
