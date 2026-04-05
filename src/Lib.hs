@@ -6,17 +6,15 @@ where
 import qualified Data.Either as Either
 import Operators
 import Platonic
-import Polyhedron
+import Semiregular
 import Svg
 import Unfold
 import Volume
 
 main :: IO ()
 main = do
-  let poly = volumeNormalizeOctahedral . dualPolyhedron . amboPolyhedron $ cube
-  printPolyhedron poly
-  print . polyhedronVolume $ poly
-  let unfoldedVertex = unfoldVertexWhere poly Either.isLeft
+  let poly = volumeNormalizeOctahedral deltoidalIcositetrahedron
+  let unfoldedVertex = unfoldVertexWhere poly (const True)
   let svgString = getSvgString unfoldedVertex
   let filePath = "./out/" ++ "output.svg"
   writeFile filePath svgString

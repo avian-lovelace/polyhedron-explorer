@@ -33,6 +33,7 @@ library
       Platonic
       Polyhedron
       Projection
+      Semiregular
       Space
       Svg
       Unfold

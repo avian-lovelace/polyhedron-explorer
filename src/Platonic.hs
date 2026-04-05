@@ -6,6 +6,10 @@ module Platonic
     octahedron,
     dodecahedron,
     icosahedron,
+    Octant,
+    SignedAxis,
+    DodecahedronVertex,
+    IcosahedronVertex,
   )
 where
 

@@ -4,6 +4,7 @@ module Operators
     amboPolyhedron,
     amboPolyhedron',
     expandedPolyhedron,
+    ExpandedFace,
   )
 where
 
