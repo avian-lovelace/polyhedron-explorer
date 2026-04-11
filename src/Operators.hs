@@ -5,6 +5,7 @@ module Operators
     amboPolyhedron',
     expandedPolyhedron,
     ExpandedFace,
+    truncatedPolyhedron,
   )
 where
 
@@ -194,3 +195,47 @@ data ExpandedFace v f
   | FaceFace f
   | EdgeFace (Edge v f)
   deriving (Eq, Ord)
+
+truncatedPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron (v, v) (Either v f)
+truncatedPolyhedron polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices = vertices', faces = faces'}
+  where
+    (Polyhedron {vertexPoints, faces}) = polyhedron
+    edges = getEdges polyhedron
+    scaleFactor = edgeLength / (2 * (edgeLength + midpointDistance))
+      where
+        (_, v1 : u : v2 : _) = head $ Map.toList faces
+        p1 = vertexPoints ! v1
+        q = vertexPoints ! u
+        p2 = vertexPoints ! v2
+        edgeLength = distance p1 q
+        midpoint1 = elementWise (/ 2) $ elementWise' (+) p1 q
+        midpoint2 = elementWise (/ 2) $ elementWise' (+) p2 q
+        midpointDistance = distance midpoint1 midpoint2
+    getvertexPoint' v1 v2 = vectorEndpoint p1 scaledVertexVector
+      where
+        p1 = vertexPoints ! v1
+        p2 = vertexPoints ! v2
+        edgeVector = differenceVector p1 p2
+        scaledVertexVector = scaleFactor /*/ edgeVector
+    vertexPoints' =
+      Map.fromList . concat $
+        [ [((v1, v2), getvertexPoint' v1 v2), ((v2, v1), getvertexPoint' v2 v1)]
+          | Edge (Pair v1 v2) _ <- edges
+        ]
+    vertices' =
+      Map.fromList . concat $
+        [ [((v1, v2), [Left v1, Right f1, Right f2]), ((v2, v1), [Left v2, Right f1, Right f2])]
+          | Edge (Pair v1 v2) (Pair f1 f2) <- edges
+        ]
+    faceFaces =
+      [ (Right face, vertexOrder')
+        | (face, vertexOrder) <- Map.toList faces,
+          let adjacentVertexPairs = getAdjacentTuples vertexOrder,
+          let vertexOrder' = [vertex' | (v1, v2) <- adjacentVertexPairs, vertex' <- [(v1, v2), (v2, v1)]]
+      ]
+    vertexFaces =
+      [ (Left vertex, vertexOrder')
+        | (vertex, adjacentVertexOrder) <- Map.toList $ getAdjacentVertexOrders polyhedron,
+          let vertexOrder' = [(vertex, adjacentVertex) | adjacentVertex <- adjacentVertexOrder]
+      ]
+    faces' = Map.fromList $ faceFaces ++ vertexFaces

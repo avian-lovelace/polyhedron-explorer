@@ -3,6 +3,7 @@ module Pair
     pair,
     pairContains,
     pairFromList,
+    getAdjacentTuples,
     getAdjacentPairs,
   )
 where
@@ -20,11 +21,14 @@ pairFromList :: (Ord a) => [a] -> Pair a
 pairFromList [x, y] = pair x y
 pairFromList _ = undefined
 
-getAdjacentPairs :: (Ord a) => [a] -> [Pair a]
-getAdjacentPairs xs = getAdjacentPairs' [] xs
+getAdjacentTuples :: [a] -> [(a, a)]
+getAdjacentTuples xs = getAdjacentTuples' xs
   where
     firstElem = head xs
-    getAdjacentPairs' currentPairs (nextElem : nextNextElem : restElems) =
-      getAdjacentPairs' (pair nextElem nextNextElem : currentPairs) (nextNextElem : restElems)
-    getAdjacentPairs' currentPairs [lastElem] = pair lastElem firstElem : currentPairs
-    getAdjacentPairs' _currentPairs [] = undefined
+    getAdjacentTuples' (nextElem : nextNextElem : restElems) =
+      (nextElem, nextNextElem) : getAdjacentTuples' (nextNextElem : restElems)
+    getAdjacentTuples' [lastElem] = [(lastElem, firstElem)]
+    getAdjacentTuples' [] = undefined
+
+getAdjacentPairs :: (Ord a) => [a] -> [Pair a]
+getAdjacentPairs xs = [pair x1 x2 | (x1, x2) <- getAdjacentTuples xs]

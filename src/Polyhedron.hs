@@ -7,13 +7,14 @@ module Polyhedron
     Edge (..),
     getEdges,
     getEdges',
+    getAdjacentVertexOrders,
     PointFace,
     getPointFaces,
   )
 where
 
 import Data.Foldable (traverse_)
-import Data.List (intercalate)
+import Data.List (find, intercalate)
 import Data.Map (Map, (!))
 import qualified Data.Map as Map
 import Pair
@@ -73,6 +74,25 @@ getEdges' (Polyhedron {vertices}) = edgeList
     edgeList = [Edge (pairFromList vPair) fPair | (fPair, vPair) <- Map.toList edgeToVerticesMap]
 
 type PointFace v = [(v, Point)]
+
+getAdjacentVertexOrders :: (Ord v, Ord f) => Polyhedron v f -> Map v [v]
+getAdjacentVertexOrders poly = Map.fromList adjacentVertexOrders
+  where
+    Polyhedron {vertices} = poly
+    edges = getEdges poly
+    adjacentVertexOrders =
+      [ (vertex, adjacentVertexOrder)
+        | (vertex, faceOrder) <- Map.toList vertices,
+          let facePairOrder = getAdjacentPairs faceOrder,
+          let adjacentVertexOrder =
+                [ adjacentVertex
+                  | facePair <- facePairOrder,
+                    let Just edge = find (\(Edge _ fPair) -> fPair == facePair) edges,
+                    let (Edge vertexPair _) = edge,
+                    let (Pair v1 v2) = vertexPair,
+                    let adjacentVertex = if v1 == vertex then v2 else v1
+                ]
+      ]
 
 getPointFaces :: (Ord v) => Polyhedron v f -> Map f (PointFace v)
 getPointFaces polyhedron = Map.map toFace faces
