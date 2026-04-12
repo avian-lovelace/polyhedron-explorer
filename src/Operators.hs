@@ -5,6 +5,8 @@ module Operators
     amboPolyhedron',
     expandedPolyhedron,
     ExpandedFace,
+    isExpandedVertexFace,
+    isExpandedFaceFace,
     truncatedPolyhedron,
   )
 where
@@ -195,6 +197,14 @@ data ExpandedFace v f
   | FaceFace f
   | EdgeFace (Edge v f)
   deriving (Eq, Ord)
+
+isExpandedVertexFace :: ExpandedFace v f -> Bool
+isExpandedVertexFace (VertexFace _) = True
+isExpandedVertexFace _ = False
+
+isExpandedFaceFace :: ExpandedFace v f -> Bool
+isExpandedFaceFace (FaceFace _) = True
+isExpandedFaceFace _ = False
 
 truncatedPolyhedron :: (Ord v, Ord f) => Polyhedron v f -> Polyhedron (v, v) (Either v f)
 truncatedPolyhedron polyhedron = Polyhedron {vertexPoints = vertexPoints', vertices = vertices', faces = faces'}
