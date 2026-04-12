@@ -1,6 +1,5 @@
 module Display
-  ( displayWireframe,
-    displaySolid,
+  ( outputRenders,
   )
 where
 
@@ -9,20 +8,27 @@ import Polyhedron
 import Projection
 import Svg
 
-displayWireframe :: (Ord v) => String -> Polyhedron v f -> IO ()
-displayWireframe fileName polyhedron = do
-  let faces = getPointFaces polyhedron
-  let (n1, n2) = offsetNormalBasis
-  let faces2d = [projectFace n1 n2 f | (_, f) <- Map.toList faces]
-  let svgString = getSvgString faces2d
-  let filePath = "./out/" ++ fileName
-  writeFile filePath svgString
+renderWireframeSvg :: (Ord v) => Polyhedron v f -> String
+renderWireframeSvg polyhedron = svgString
+  where
+    faces = getPointFaces polyhedron
+    (n1, n2) = offsetNormalBasis
+    faces2d = [projectFace n1 n2 f | (_, f) <- Map.toList faces]
+    svgString = getSvgString faces2d
 
-displaySolid :: (Ord v) => String -> Polyhedron v f -> IO ()
-displaySolid fileName polyhedron = do
-  let faces = getPointFaces polyhedron
-  let (n1, n2) = offsetNormalBasis
-  let faces2d = [projectFace n1 n2 f | (_, f) <- Map.toList faces, isPositivelyOriented n1 n2 f]
-  let svgString = getSvgString faces2d
-  let filePath = "./out/" ++ fileName
-  writeFile filePath svgString
+renderSolidSvg :: (Ord v) => Polyhedron v f -> String
+renderSolidSvg polyhedron = svgString
+  where
+    faces = getPointFaces polyhedron
+    (n1, n2) = offsetNormalBasis
+    faces2d = [projectFace n1 n2 f | (_, f) <- Map.toList faces, isPositivelyOriented n1 n2 f]
+    svgString = getSvgString faces2d
+
+outputRenders :: (Ord v) => Polyhedron v f -> [Char] -> IO ()
+outputRenders polyhedron name = do
+  let solidFilePath = "./renders/" ++ name ++ "-solid.svg"
+  let wireframeFilePath = "./renders/" ++ name ++ "-wireframe.svg"
+  let solidRenderSvgString = renderSolidSvg polyhedron
+  let wireframeRenderSvgString = renderWireframeSvg polyhedron
+  writeFile solidFilePath solidRenderSvgString
+  writeFile wireframeFilePath wireframeRenderSvgString
