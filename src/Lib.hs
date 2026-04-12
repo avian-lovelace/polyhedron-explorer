@@ -3,14 +3,10 @@ module Lib
   )
 where
 
-import Data.Either (isLeft, isRight)
-import qualified Data.Either as Either
-import Data.Foldable (traverse_)
-import qualified Data.Map as Map
+import Data.Either (isLeft)
 import Display
 import Operators
 import Platonic
-import Polyhedron
 import Semiregular
 import Svg
 import Unfold
@@ -32,6 +28,16 @@ main = do
   runDeltoidalIcositetrahedron
   runRhombicosidodecahedron
   runDeltoidalHexecontahedron
+  runTruncatedTetrahedron
+  runTriakisTetrahedron
+  runTruncatedCube
+  runTriakisOctahedron
+  runTruncatedOctahedron
+  runTetrakisHexahedron
+  runTruncatedDodecahedron
+  runTriakisIcosahedron
+  runTruncatedIcosahedron
+  runPentakisDodecahedron
 
 runTetrahedron :: IO ()
 runTetrahedron = do
@@ -165,3 +171,93 @@ runDeltoidalHexecontahedron = do
       let patternSvgString = getSvgString unfoldedVertex
       let patternFilePath = "./patterns/" ++ name ++ "-pattern.svg"
       writeFile patternFilePath patternSvgString
+
+runTruncatedTetrahedron :: IO ()
+runTruncatedTetrahedron = do
+  let polyhedron = volumeNormalizeOctahedral truncatedTetrahedron
+  let name = "truncated-tetrahedron"
+  case validatePolyhedron polyhedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      outputRenders polyhedron name
+
+runTriakisTetrahedron :: IO ()
+runTriakisTetrahedron = do
+  let polyhedron = volumeNormalizeOctahedral triakisTetrahedron
+  let name = "triakis-tetrahedron"
+  case validatePolyhedron polyhedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      outputRenders polyhedron name
+
+runTruncatedCube :: IO ()
+runTruncatedCube = do
+  let polyhedron = volumeNormalizeOctahedral truncatedCube
+  let name = "truncated-cube"
+  case validatePolyhedron polyhedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      outputRenders polyhedron name
+
+runTriakisOctahedron :: IO ()
+runTriakisOctahedron = do
+  let polyhedron = volumeNormalizeOctahedral triakisOctahedron
+  let name = "triakis-octahedron"
+  case validatePolyhedron polyhedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      outputRenders polyhedron name
+
+runTruncatedOctahedron :: IO ()
+runTruncatedOctahedron = do
+  let polyhedron = volumeNormalizeOctahedral truncatedOctahedron
+  let name = "truncated-octahedron"
+  case validatePolyhedron polyhedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      outputRenders polyhedron name
+
+runTetrakisHexahedron :: IO ()
+runTetrakisHexahedron = do
+  let polyhedron = volumeNormalizeOctahedral tetrakisHexahedron
+  let name = "triakis-octahedron"
+  case validatePolyhedron polyhedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      outputRenders polyhedron name
+
+runTruncatedDodecahedron :: IO ()
+runTruncatedDodecahedron = do
+  let polyhedron = volumeNormalizeIcosahedral truncatedDodecahedron
+  let name = "truncated-dodecahedron"
+  case validatePolyhedron polyhedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      outputRenders polyhedron name
+
+runTriakisIcosahedron :: IO ()
+runTriakisIcosahedron = do
+  let polyhedron = volumeNormalizeIcosahedral triakisIcosahedron
+  let name = "triakis-icosahedron"
+  case validatePolyhedron polyhedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      outputRenders polyhedron name
+
+runTruncatedIcosahedron :: IO ()
+runTruncatedIcosahedron = do
+  let polyhedron = volumeNormalizeIcosahedral truncatedIcosahedron
+  let name = "truncated-icosahedron"
+  case validatePolyhedron polyhedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      outputRenders polyhedron name
+
+runPentakisDodecahedron :: IO ()
+runPentakisDodecahedron = do
+  let polyhedron = volumeNormalizeIcosahedral pentakisDodecahedron
+  let name = "pentakis-dodecahedron"
+  case validatePolyhedron polyhedron of
+    Left errorMessage -> putStrLn errorMessage
+    Right () -> do
+      outputRenders polyhedron name
