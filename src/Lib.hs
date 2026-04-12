@@ -3,7 +3,7 @@ module Lib
   )
 where
 
-import Data.Either (isLeft)
+import Data.Either (isLeft, isRight)
 import Display
 import Operators
 import Platonic
@@ -101,10 +101,14 @@ runRhombicDodecahedron = do
     Left errorMessage -> putStrLn errorMessage
     Right () -> do
       outputRenders polyhedron name
-      let unfoldedVertex = unfoldVertexWhere polyhedron isLeft
-      let patternSvgString = getSvgString unfoldedVertex
-      let patternFilePath = "./patterns/" ++ name ++ "-pattern.svg"
-      writeFile patternFilePath patternSvgString
+      let unfoldedVertex1 = unfoldVertexWhere polyhedron isLeft
+      let patternSvgString1 = getSvgString unfoldedVertex1
+      let patternFilePath1 = "./patterns/" ++ name ++ "-pattern-1.svg"
+      writeFile patternFilePath1 patternSvgString1
+      let unfoldedVertex2 = take 3 $ unfoldVertexWhere polyhedron isRight
+      let patternSvgString2 = getSvgString unfoldedVertex2
+      let patternFilePath2 = "./patterns/" ++ name ++ "-pattern-2.svg"
+      writeFile patternFilePath2 patternSvgString2
 
 runIcosadodecahedron :: IO ()
 runIcosadodecahedron = do
@@ -207,6 +211,10 @@ runTriakisOctahedron = do
     Left errorMessage -> putStrLn errorMessage
     Right () -> do
       outputRenders polyhedron name
+      let unfoldedVertex = take 6 $ unfoldVertexWhere polyhedron isRight
+      let patternSvgString = getSvgString unfoldedVertex
+      let patternFilePath = "./patterns/" ++ name ++ "-pattern.svg"
+      writeFile patternFilePath patternSvgString
 
 runTruncatedOctahedron :: IO ()
 runTruncatedOctahedron = do
@@ -220,11 +228,15 @@ runTruncatedOctahedron = do
 runTetrakisHexahedron :: IO ()
 runTetrakisHexahedron = do
   let polyhedron = volumeNormalizeOctahedral tetrakisHexahedron
-  let name = "triakis-octahedron"
+  let name = "tetrakis-hexahedron"
   case validatePolyhedron polyhedron of
     Left errorMessage -> putStrLn errorMessage
     Right () -> do
       outputRenders polyhedron name
+      let unfoldedVertex = unfoldVertexWhere polyhedron isRight
+      let patternSvgString = getSvgString unfoldedVertex
+      let patternFilePath = "./patterns/" ++ name ++ "-pattern.svg"
+      writeFile patternFilePath patternSvgString
 
 runTruncatedDodecahedron :: IO ()
 runTruncatedDodecahedron = do
