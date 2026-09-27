@@ -127,10 +127,14 @@ runRhombicTriacontahedron = do
     Left errorMessage -> putStrLn errorMessage
     Right () -> do
       outputRenders polyhedron name
-      let unfoldedVertex = unfoldVertexWhere polyhedron isLeft
-      let patternSvgString = getSvgString unfoldedVertex
-      let patternFilePath = "./patterns/" ++ name ++ "-pattern.svg"
-      writeFile patternFilePath patternSvgString
+      let unfoldedVertex1 = unfoldVertexWhere polyhedron isLeft
+      let patternSvgString1 = getSvgString unfoldedVertex1
+      let patternFilePath1 = "./patterns/" ++ name ++ "-pattern-1.svg"
+      writeFile patternFilePath1 patternSvgString1
+      let unfoldedVertex2 = take 3 . drop 2 $ unfoldVertexWhere polyhedron isRight
+      let patternSvgString2 = getSvgString unfoldedVertex2
+      let patternFilePath2 = "./patterns/" ++ name ++ "-pattern-2.svg"
+      writeFile patternFilePath2 patternSvgString2
 
 runRhomicuboctahedron :: IO ()
 runRhomicuboctahedron = do
@@ -193,6 +197,10 @@ runTriakisTetrahedron = do
     Left errorMessage -> putStrLn errorMessage
     Right () -> do
       outputRenders polyhedron name
+      let unfoldedVertex = unfoldVertexWhere polyhedron isLeft
+      let patternSvgString = getSvgString unfoldedVertex
+      let patternFilePath = "./patterns/" ++ name ++ "-pattern.svg"
+      writeFile patternFilePath patternSvgString
 
 runTruncatedCube :: IO ()
 runTruncatedCube = do
